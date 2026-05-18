@@ -1,0 +1,687 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>Premium Countdown — Ultimate Event Tracker</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            transition: all 0.2s ease;
+        }
+
+        body {
+            background: linear-gradient(145deg, #0b1120 0%, #111827 100%);
+            font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, sans-serif;
+            color: #eef2ff;
+            padding: 2rem 1.5rem;
+        }
+
+        /* dark mode native (always dark elegant) */
+        .app-container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        /* header & actions */
+        .header {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2.5rem;
+            gap: 1rem;
+        }
+
+        h1 {
+            font-size: 1.9rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #F9FAFB, #A5B4FC);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            letter-spacing: -0.3px;
+        }
+
+        .badge {
+            background: rgba(165, 180, 252, 0.15);
+            backdrop-filter: blur(4px);
+            padding: 0.4rem 1rem;
+            border-radius: 40px;
+            font-size: 0.8rem;
+            font-weight: 500;
+            border: 1px solid rgba(165, 180, 252, 0.3);
+        }
+
+        .action-bar {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+            margin-bottom: 2rem;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .btn {
+            background: #1f2a3e;
+            border: none;
+            padding: 0.65rem 1.4rem;
+            border-radius: 40px;
+            font-weight: 600;
+            font-size: 0.85rem;
+            cursor: pointer;
+            color: #e2e8f0;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            backdrop-filter: blur(4px);
+            transition: 0.2s;
+            font-family: inherit;
+        }
+
+        .btn-primary {
+            background: #4f46e5;
+            color: white;
+            box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3);
+        }
+
+        .btn-primary:hover {
+            background: #6366f1;
+            transform: scale(1.02);
+        }
+
+        .btn-outline {
+            background: transparent;
+            border: 1px solid #334155;
+        }
+
+        .btn-outline:hover {
+            background: #1e293b;
+            border-color: #6366f1;
+        }
+
+        .category-filter {
+            display: flex;
+            gap: 0.6rem;
+            flex-wrap: wrap;
+            margin-bottom: 2rem;
+            align-items: center;
+        }
+
+        .cat-btn {
+            background: #1e293b;
+            padding: 0.4rem 1rem;
+            border-radius: 30px;
+            font-size: 0.8rem;
+            font-weight: 500;
+            cursor: pointer;
+        }
+
+        .cat-btn.active {
+            background: #4f46e5;
+            color: white;
+        }
+
+        /* grid cards */
+        .countdown-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 1.8rem;
+            margin-top: 1rem;
+        }
+
+        .card {
+            background: rgba(17, 24, 39, 0.7);
+            backdrop-filter: blur(12px);
+            border-radius: 2rem;
+            padding: 1.5rem;
+            border: 1px solid rgba(99, 102, 241, 0.25);
+            transition: transform 0.2s, box-shadow 0.2s;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            border-color: rgba(129, 140, 248, 0.6);
+            box-shadow: 0 20px 30px -12px rgba(0, 0, 0, 0.5);
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            margin-bottom: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .event-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            word-break: break-word;
+        }
+
+        .category-tag {
+            font-size: 0.7rem;
+            background: #2d3a5e;
+            padding: 0.2rem 0.7rem;
+            border-radius: 20px;
+            font-weight: 500;
+        }
+
+        .countdown-display {
+            text-align: center;
+            margin: 1.2rem 0;
+        }
+
+        .time-number {
+            font-size: 2.8rem;
+            font-weight: 800;
+            font-family: monospace;
+            letter-spacing: 2px;
+            background: linear-gradient(to right, #f0f9ff, #c7d2fe);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+
+        .unit-label {
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #94a3b8;
+        }
+
+        .details-row {
+            display: flex;
+            justify-content: space-between;
+            margin: 0.8rem 0;
+            font-size: 0.8rem;
+            background: rgba(0, 0, 0, 0.3);
+            padding: 0.5rem 0.8rem;
+            border-radius: 1rem;
+        }
+
+        .action-icons {
+            display: flex;
+            justify-content: flex-end;
+            gap: 0.8rem;
+            margin-top: 1rem;
+        }
+
+        .icon-btn {
+            background: none;
+            border: none;
+            color: #a5b4fc;
+            cursor: pointer;
+            font-size: 1.2rem;
+            transition: 0.1s;
+        }
+
+        .icon-btn:hover {
+            color: white;
+        }
+
+        /* modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(8px);
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .modal-content {
+            background: #111827;
+            max-width: 500px;
+            width: 90%;
+            border-radius: 2rem;
+            padding: 2rem;
+            border: 1px solid #4f46e5;
+        }
+
+        .modal-content input, .modal-content select, .modal-content textarea {
+            width: 100%;
+            padding: 0.7rem;
+            margin: 0.5rem 0 1rem 0;
+            background: #1e293b;
+            border: 1px solid #334155;
+            border-radius: 1rem;
+            color: white;
+            font-family: inherit;
+        }
+
+        .modal-buttons {
+            display: flex;
+            justify-content: flex-end;
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        /* share toast */
+        .toast {
+            position: fixed;
+            bottom: 2rem;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #1e293b;
+            padding: 0.7rem 1.5rem;
+            border-radius: 50px;
+            color: white;
+            font-weight: 500;
+            z-index: 1100;
+            backdrop-filter: blur(12px);
+            border: 1px solid #4f46e5;
+            pointer-events: none;
+        }
+
+        .empty-state {
+            text-align: center;
+            grid-column: 1 / -1;
+            padding: 4rem;
+            background: rgba(0,0,0,0.2);
+            border-radius: 2rem;
+        }
+
+        @media (max-width: 640px) {
+            body { padding: 1rem; }
+            .time-number { font-size: 2rem; }
+        }
+
+        /* custom background preview */
+        [data-bg-style] {
+            transition: background 0.2s;
+        }
+    </style>
+</head>
+<body>
+<div class="app-container">
+    <div class="header">
+        <div>
+            <h1>✨ Countdown Premium</h1>
+            <div class="badge" style="margin-top: 8px;">unlimited events • widgets-ready • cloud sync</div>
+        </div>
+        <div style="display: flex; gap: 12px;">
+            <button class="btn btn-outline" id="shareAllBtn">🔗 Share all events</button>
+            <button class="btn btn-primary" id="openAddModalBtn">+ New countdown</button>
+        </div>
+    </div>
+
+    <!-- categories & premium filter -->
+    <div class="category-filter">
+        <span style="font-size:0.8rem;">📂 Categories:</span>
+        <div class="cat-btn active" data-cat="all">All</div>
+        <div class="cat-btn" data-cat="Birthday">🎂 Birthday</div>
+        <div class="cat-btn" data-cat="Work">💼 Work</div>
+        <div class="cat-btn" data-cat="Family">👨‍👩‍👧 Family</div>
+        <div class="cat-btn" data-cat="Vacation">✈️ Vacation</div>
+        <div class="cat-btn" data-cat="Custom">⭐ Custom</div>
+    </div>
+
+    <div class="action-bar">
+        <div><span style="opacity:0.7;">⭐ premium features: widgets-ready, themes, cloud-sync (export/import), shareable links</span></div>
+        <div style="display: flex; gap: 8px;">
+            <button class="btn btn-outline" id="exportDataBtn">💾 Cloud sync (export)</button>
+            <input type="file" id="importFileInput" accept=".json" style="display: none;" />
+            <button class="btn btn-outline" id="importDataBtn">☁️ Import backup</button>
+        </div>
+    </div>
+
+    <div id="countdownGrid" class="countdown-grid">
+        <!-- dynamic cards injected -->
+        <div class="empty-state">✨ No events yet. Click "+ New countdown" to create your first event.<br>🎉 Unlimited countdowns, custom themes & categories</div>
+    </div>
+</div>
+
+<!-- Modal for adding/editing countdown (premium: custom music placeholder, backgrounds, categories) -->
+<div id="eventModal" class="modal">
+    <div class="modal-content">
+        <h3 id="modalTitle">➕ Create Countdown</h3>
+        <input type="text" id="eventName" placeholder="Event name (e.g., Birthday, Launch)" autocomplete="off">
+        <input type="datetime-local" id="eventDate">
+        <select id="eventCategory">
+            <option value="Birthday">🎂 Birthday</option>
+            <option value="Work">💼 Work</option>
+            <option value="Family">👨‍👩‍👧 Family</option>
+            <option value="Vacation">✈️ Vacation</option>
+            <option value="Custom">⭐ Custom</option>
+        </select>
+        <label style="font-size:0.75rem;">🎨 Theme color / background preview (custom background):</label>
+        <select id="themeStyle">
+            <option value="default">Default (dark gradient)</option>
+            <option value="sunset">Sunset Gradient 🌅</option>
+            <option value="ocean">Ocean Waves 🌊</option>
+            <option value="forest">Forest Glade 🌲</option>
+        </select>
+        <textarea id="eventNotes" rows="2" placeholder="Notes / memories (story feature) ... attach up to 10 images placeholder"></textarea>
+        <div class="modal-buttons">
+            <button class="btn btn-outline" id="closeModalBtn">Cancel</button>
+            <button class="btn btn-primary" id="saveEventBtn">Save</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    // ---------- Data Model ----------
+    let events = [];
+    let currentEditId = null;
+    let currentFilter = "all";
+
+    // load from localStorage (cloud sync simulation)
+    function loadData() {
+        const stored = localStorage.getItem("premium_countdown_data");
+        if(stored) {
+            events = JSON.parse(stored);
+        } else {
+            // demo default events (core + premium)
+            events = [
+                { id: "1", name: "New Year 2026", targetDate: "2026-01-01T00:00", category: "Custom", notes: "Countdown to midnight celebration!", theme: "sunset" },
+                { id: "2", name: "Product Launch", targetDate: "2025-07-15T09:00", category: "Work", notes: "Big reveal event", theme: "ocean" },
+                { id: "3", name: "Family Reunion", targetDate: "2025-09-20T12:00", category: "Family", notes: "Memories & photos", theme: "forest" },
+                { id: "4", name: "Summer Vacation", targetDate: "2025-08-01T10:00", category: "Vacation", notes: "Beach ready 🏖️", theme: "default" }
+            ];
+        }
+        renderEvents();
+    }
+
+    function saveToLocal() {
+        localStorage.setItem("premium_countdown_data", JSON.stringify(events));
+    }
+
+    // Helper to calculate time left or elapsed (count-up if past)
+    function getTimeInfo(targetISO) {
+        const now = new Date();
+        const target = new Date(targetISO);
+        const diffMs = target - now;
+        const isPast = diffMs < 0;
+        const absMs = Math.abs(diffMs);
+        const seconds = Math.floor(absMs / 1000);
+        const minutes = Math.floor(seconds / 60);
+        const hours = Math.floor(minutes / 60);
+        const days = Math.floor(hours / 24);
+        const months = Math.floor(days / 30.44);
+        const years = Math.floor(days / 365.25);
+        
+        if(!isPast) {
+            if(days > 30) return `${months} months`;
+            if(days > 0) return `${days} days`;
+            if(hours > 0) return `${hours} hours`;
+            if(minutes > 0) return `${minutes} minutes`;
+            return `${seconds} seconds`;
+        } else {
+            // count-up style
+            if(years > 0) return `${years} years ago`;
+            if(months > 0) return `${months} months ago`;
+            if(days > 0) return `${days} days ago`;
+            if(hours > 0) return `${hours} hours ago`;
+            return `${minutes} minutes ago`;
+        }
+    }
+
+    function getCountdownType(targetISO) {
+        const now = new Date();
+        const target = new Date(targetISO);
+        return target > now ? "⏳ Countdown" : "⌛ Count-up (elapsed)";
+    }
+
+    // format date nicely
+    function formatDate(iso) {
+        const d = new Date(iso);
+        return d.toLocaleDateString(undefined, { year:'numeric', month:'short', day:'numeric', hour:'2-digit', minute:'2-digit' });
+    }
+
+    // background style mapping
+    function getBgStyle(theme) {
+        switch(theme) {
+            case "sunset": return "linear-gradient(135deg, #ff7e5f, #feb47b)";
+            case "ocean": return "linear-gradient(135deg, #1e3c72, #2a5298)";
+            case "forest": return "linear-gradient(135deg, #134e5e, #71b280)";
+            default: return "rgba(17, 24, 39, 0.85)";
+        }
+    }
+
+    // render cards with widgets-like design, share, categories, notes
+    function renderEvents() {
+        const filtered = currentFilter === "all" ? events : events.filter(ev => ev.category === currentFilter);
+        const grid = document.getElementById("countdownGrid");
+        if(!filtered.length) {
+            grid.innerHTML = `<div class="empty-state">✨ No events in this category. Create a new countdown!</div>`;
+            return;
+        }
+        grid.innerHTML = filtered.map(ev => {
+            const timeStr = getTimeInfo(ev.targetDate);
+            const countType = getCountdownType(ev.targetDate);
+            const bgGradient = getBgStyle(ev.theme || "default");
+            return `
+                <div class="card" data-id="${ev.id}" style="background: ${bgGradient}; backdrop-filter: blur(4px); border: 1px solid rgba(255,255,255,0.2);">
+                    <div class="card-header">
+                        <span class="event-title">${escapeHtml(ev.name)}</span>
+                        <span class="category-tag">${ev.category}</span>
+                    </div>
+                    <div class="countdown-display">
+                        <div class="time-number">${escapeHtml(timeStr)}</div>
+                        <div class="unit-label">${countType}</div>
+                    </div>
+                    <div class="details-row">
+                        <span>📅 ${formatDate(ev.targetDate)}</span>
+                        <span>${new Date(ev.targetDate) > new Date() ? '🔔 notification ready' : '📜 memory mode'}</span>
+                    </div>
+                    ${ev.notes ? `<div style="font-size:0.75rem; margin:0.5rem 0; background:rgba(0,0,0,0.3); padding:6px 10px; border-radius: 16px;">📝 ${escapeHtml(ev.notes)}</div>` : ''}
+                    <div class="action-icons">
+                        <button class="icon-btn share-event" data-id="${ev.id}" title="Share event (import link)">🔗 Share</button>
+                        <button class="icon-btn edit-event" data-id="${ev.id}" title="Edit countdown">✏️ Edit</button>
+                        <button class="icon-btn delete-event" data-id="${ev.id}" title="Delete">🗑️ Delete</button>
+                        <button class="icon-btn reminder-event" data-id="${ev.id}" title="Test notification (premium)">🔔 Remind</button>
+                    </div>
+                    <div style="font-size:0.7rem; margin-top: 8px; opacity:0.7;">✨ widget + custom bg</div>
+                </div>
+            `;
+        }).join('');
+
+        // attach event listeners dynamically
+        document.querySelectorAll('.edit-event').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const id = btn.getAttribute('data-id');
+                openEditModal(id);
+            });
+        });
+        document.querySelectorAll('.delete-event').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const id = btn.getAttribute('data-id');
+                deleteEventById(id);
+            });
+        });
+        document.querySelectorAll('.share-event').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const id = btn.getAttribute('data-id');
+                shareSingleEvent(id);
+            });
+        });
+        document.querySelectorAll('.reminder-event').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const id = btn.getAttribute('data-id');
+                sendNotificationPreview(id);
+            });
+        });
+    }
+
+    function escapeHtml(str) { if(!str) return ''; return str.replace(/[&<>]/g, function(m){if(m==='&') return '&amp;'; if(m==='<') return '&lt;'; if(m==='>') return '&gt;'; return m;}); }
+
+    function openEditModal(id) {
+        const ev = events.find(e => e.id === id);
+        if(!ev) return;
+        currentEditId = id;
+        document.getElementById("modalTitle").innerText = "✏️ Edit Countdown";
+        document.getElementById("eventName").value = ev.name;
+        document.getElementById("eventDate").value = ev.targetDate.slice(0,16);
+        document.getElementById("eventCategory").value = ev.category;
+        document.getElementById("themeStyle").value = ev.theme || "default";
+        document.getElementById("eventNotes").value = ev.notes || "";
+        document.getElementById("eventModal").style.display = "flex";
+    }
+
+    function deleteEventById(id) {
+        events = events.filter(ev => ev.id !== id);
+        saveToLocal();
+        renderEvents();
+        showToast("🗑️ Event removed");
+    }
+
+    function saveEventFromModal() {
+        const name = document.getElementById("eventName").value.trim();
+        const targetDate = document.getElementById("eventDate").value;
+        const category = document.getElementById("eventCategory").value;
+        const theme = document.getElementById("themeStyle").value;
+        const notes = document.getElementById("eventNotes").value;
+        if(!name) { alert("Event name required"); return; }
+        if(!targetDate) { alert("Please set a valid date/time"); return; }
+        if(currentEditId) {
+            const idx = events.findIndex(e => e.id === currentEditId);
+            if(idx !== -1) {
+                events[idx] = { ...events[idx], name, targetDate, category, theme, notes };
+            }
+            currentEditId = null;
+        } else {
+            const newId = Date.now().toString();
+            events.push({ id: newId, name, targetDate, category, notes, theme });
+        }
+        saveToLocal();
+        renderEvents();
+        closeModal();
+        showToast("✅ Event saved! (sync ready)");
+    }
+
+    function closeModal() {
+        document.getElementById("eventModal").style.display = "none";
+        currentEditId = null;
+        document.getElementById("eventName").value = "";
+        document.getElementById("eventDate").value = "";
+        document.getElementById("eventNotes").value = "";
+        document.getElementById("themeStyle").value = "default";
+    }
+
+    function showToast(msg) {
+        let toast = document.querySelector('.toast');
+        if(toast) toast.remove();
+        const div = document.createElement('div');
+        div.className = 'toast';
+        div.innerText = msg;
+        document.body.appendChild(div);
+        setTimeout(() => div.remove(), 2000);
+    }
+
+    function shareSingleEvent(id) {
+        const ev = events.find(e => e.id === id);
+        if(!ev) return;
+        const shareObject = {
+            type: "countdown_share",
+            version: 1,
+            event: { name: ev.name, targetDate: ev.targetDate, category: ev.category, notes: ev.notes, theme: ev.theme }
+        };
+        const link = `data:application/json;charset=utf-8,${encodeURIComponent(JSON.stringify(shareObject))}`;
+        // simulate shareable link copy
+        navigator.clipboard.writeText(`[Countdown Import] Copy this JSON: ${JSON.stringify(shareObject)}`);
+        showToast(`🔗 Share link copied! Send JSON to friend (they can import via Cloud Sync)`);
+    }
+
+    function sendNotificationPreview(id) {
+        const ev = events.find(e => e.id === id);
+        if(!ev) return;
+        if ("Notification" in window) {
+            if (Notification.permission === "granted") {
+                new Notification(`🔔 ${ev.name}`, { body: `Event: ${formatDate(ev.targetDate)}` });
+            } else if (Notification.permission !== "denied") {
+                Notification.requestPermission().then(perm => {
+                    if(perm === "granted") new Notification(`Countdown: ${ev.name}`, { body: "Premium reminder active" });
+                });
+            } else { showToast("⚠️ Notification permission denied. Enable in browser settings."); }
+        } else { showToast("Notifications not supported"); }
+    }
+
+    // export all events (cloud sync export)
+    function exportAllEvents() {
+        const dataStr = JSON.stringify(events, null, 2);
+        const blob = new Blob([dataStr], {type: "application/json"});
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `countdown_backup_${new Date().toISOString().slice(0,19)}.json`;
+        a.click();
+        URL.revokeObjectURL(url);
+        showToast("☁️ Cloud backup exported");
+    }
+
+    function importEventsFromFile(file) {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            try {
+                const imported = JSON.parse(e.target.result);
+                if(Array.isArray(imported)) {
+                    events = imported;
+                    saveToLocal();
+                    renderEvents();
+                    showToast(`✅ Imported ${imported.length} events (cloud sync restored)`);
+                } else { alert("Invalid format"); }
+            } catch(err){ alert("Invalid file"); }
+        };
+        reader.readAsText(file);
+    }
+
+    function shareAllEventsLink() {
+        const exportData = JSON.stringify(events);
+        navigator.clipboard.writeText(exportData);
+        showToast(`📋 All events data copied! Share as backup/import.`);
+    }
+
+    // category filter
+    function setupCategoryFilters() {
+        const btns = document.querySelectorAll('.cat-btn');
+        btns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                btns.forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                currentFilter = btn.getAttribute('data-cat');
+                renderEvents();
+            });
+        });
+    }
+
+    // initialize core
+    function init() {
+        loadData();
+        setupCategoryFilters();
+        document.getElementById("openAddModalBtn").addEventListener("click", () => {
+            currentEditId = null;
+            document.getElementById("modalTitle").innerText = "➕ Create New Countdown";
+            document.getElementById("eventName").value = "";
+            document.getElementById("eventDate").value = "";
+            document.getElementById("eventNotes").value = "";
+            document.getElementById("eventCategory").value = "Custom";
+            document.getElementById("themeStyle").value = "default";
+            document.getElementById("eventModal").style.display = "flex";
+        });
+        document.getElementById("closeModalBtn").addEventListener("click", closeModal);
+        document.getElementById("saveEventBtn").addEventListener("click", saveEventFromModal);
+        document.getElementById("exportDataBtn").addEventListener("click", exportAllEvents);
+        document.getElementById("importDataBtn").addEventListener("click", () => {
+            document.getElementById("importFileInput").click();
+        });
+        document.getElementById("importFileInput").addEventListener("change", (e) => {
+            if(e.target.files.length) importEventsFromFile(e.target.files[0]);
+            e.target.value = "";
+        });
+        document.getElementById("shareAllBtn").addEventListener("click", shareAllEventsLink);
+        window.addEventListener('click', (e) => { if(e.target === document.getElementById("eventModal")) closeModal(); });
+        // request notif perm on first reminder click is fine, but ask gently if needed
+        if(Notification.permission === "default") Notification.requestPermission();
+    }
+
+    init();
+</script>
+</body>
+</html>
