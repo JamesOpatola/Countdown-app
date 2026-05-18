@@ -1,0 +1,733 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>Prestige Chrono — Elegant Countdowns</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700;14..32,800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: linear-gradient(145deg, #f5f0e8 0%, #ede6d9 100%);
+            min-height: 100vh;
+            color: #1a1a2e;
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: #e8e2d4; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb { background: #c9a96b; border-radius: 10px; }
+
+        .app-wrapper {
+            max-width: 1300px;
+            margin: 0 auto;
+            padding: 24px 28px 48px;
+        }
+
+        /* Logo Styles */
+        .logo-area {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+
+        .logo-svg {
+            width: 48px;
+            height: 48px;
+            filter: drop-shadow(0 4px 8px rgba(0,0,0,0.1));
+        }
+
+        .logo-text h1 {
+            font-size: 1.85rem;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+            background: linear-gradient(135deg, #2c2418, #8b6914, #c9a96b);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+
+        .logo-text p {
+            font-size: 0.7rem;
+            letter-spacing: 2px;
+            color: #9b7b4c;
+            text-transform: uppercase;
+            font-weight: 500;
+        }
+
+        /* Header */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 48px;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        .user-badge {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            background: rgba(255,255,255,0.6);
+            backdrop-filter: blur(12px);
+            padding: 8px 24px 8px 18px;
+            border-radius: 60px;
+            border: 1px solid rgba(201, 169, 107, 0.3);
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .user-badge:hover {
+            background: rgba(255,255,255,0.8);
+            border-color: #c9a96b;
+        }
+
+        .user-avatar {
+            width: 42px;
+            height: 42px;
+            background: linear-gradient(135deg, #c9a96b, #8b6914);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            color: white;
+            font-size: 1rem;
+        }
+
+        /* Stats Cards */
+        .stats-bar {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 42px;
+            flex-wrap: wrap;
+        }
+
+        .stat-card {
+            background: rgba(255,255,255,0.75);
+            backdrop-filter: blur(10px);
+            border-radius: 28px;
+            padding: 18px 28px;
+            flex: 1;
+            min-width: 130px;
+            border: 1px solid rgba(201, 169, 107, 0.3);
+            transition: all 0.2s;
+        }
+
+        .stat-card:hover {
+            background: white;
+            border-color: #c9a96b;
+        }
+
+        .stat-number {
+            font-size: 2rem;
+            font-weight: 800;
+            color: #8b6914;
+        }
+
+        /* Category Pills */
+        .categories-scroll {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 32px;
+            overflow-x: auto;
+            padding-bottom: 10px;
+        }
+
+        .pill {
+            background: rgba(255,255,255,0.7);
+            backdrop-filter: blur(8px);
+            padding: 10px 26px;
+            border-radius: 40px;
+            font-weight: 600;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            white-space: nowrap;
+            border: 1px solid rgba(201, 169, 107, 0.3);
+            color: #5c4b2a;
+        }
+
+        .pill i {
+            margin-right: 8px;
+        }
+
+        .pill.active {
+            background: #c9a96b;
+            color: white;
+            border-color: #c9a96b;
+            box-shadow: 0 6px 14px rgba(201, 169, 107, 0.3);
+        }
+
+        /* Buttons */
+        .btn-primary {
+            background: linear-gradient(135deg, #2c2418, #4a3a22);
+            color: white;
+            border: none;
+            padding: 12px 28px;
+            border-radius: 40px;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 0.9rem;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(74, 58, 34, 0.3);
+        }
+
+        .btn-outline-light {
+            background: rgba(255,255,255,0.6);
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(201, 169, 107, 0.5);
+            padding: 12px 24px;
+            border-radius: 40px;
+            font-weight: 500;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            color: #5c4b2a;
+            transition: all 0.2s;
+        }
+
+        .btn-outline-light:hover {
+            background: white;
+            border-color: #c9a96b;
+        }
+
+        .action-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 36px;
+            flex-wrap: wrap;
+            gap: 16px;
+        }
+
+        /* Event Cards */
+        .countdown-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 28px;
+            margin-top: 8px;
+        }
+
+        .event-card {
+            background: white;
+            border-radius: 32px;
+            padding: 26px;
+            transition: all 0.3s cubic-bezier(0.2, 0, 0, 1);
+            border: 1px solid #efe6d8;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.02);
+        }
+
+        .event-card:hover {
+            transform: translateY(-6px);
+            box-shadow: 0 20px 35px -12px rgba(0, 0, 0, 0.12);
+            border-color: #c9a96b;
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 20px;
+        }
+
+        .event-title {
+            font-size: 1.45rem;
+            font-weight: 700;
+            letter-spacing: -0.3px;
+        }
+
+        .category-chip {
+            background: #f5efe6;
+            padding: 5px 14px;
+            border-radius: 30px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            color: #8b6914;
+        }
+
+        .countdown-timer {
+            background: linear-gradient(135deg, #faf7f0, #f5efe6);
+            border-radius: 28px;
+            padding: 22px;
+            text-align: center;
+            margin: 18px 0;
+        }
+
+        .timer-digits {
+            font-size: 1.7rem;
+            font-weight: 800;
+            font-family: 'Inter', monospace;
+            letter-spacing: 2px;
+            color: #c9a96b;
+        }
+
+        .event-date {
+            font-size: 0.8rem;
+            color: #9b7b4c;
+            margin: 12px 0;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .event-notes {
+            font-size: 0.8rem;
+            color: #9b7b4c;
+            background: #faf7f0;
+            padding: 10px 14px;
+            border-radius: 20px;
+            margin-top: 12px;
+        }
+
+        .card-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 18px;
+            margin-top: 18px;
+            padding-top: 14px;
+            border-top: 1px solid #efe6d8;
+        }
+
+        .card-action-btn {
+            background: none;
+            border: none;
+            color: #b8a070;
+            cursor: pointer;
+            font-size: 0.85rem;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: color 0.2s;
+        }
+
+        .card-action-btn:hover {
+            color: #c9a96b;
+        }
+
+        /* Auth Modal */
+        .auth-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            backdrop-filter: blur(14px);
+            z-index: 2000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .auth-card {
+            background: white;
+            border-radius: 48px;
+            padding: 44px 40px;
+            max-width: 440px;
+            width: 90%;
+            text-align: center;
+            box-shadow: 0 30px 50px -20px rgba(0,0,0,0.3);
+        }
+
+        .auth-card input {
+            width: 100%;
+            padding: 14px 18px;
+            margin: 12px 0;
+            border: 1.5px solid #e8dfd0;
+            border-radius: 40px;
+            font-family: inherit;
+            font-size: 0.95rem;
+        }
+
+        .auth-card input:focus {
+            outline: none;
+            border-color: #c9a96b;
+        }
+
+        .auth-btn {
+            background: linear-gradient(135deg, #2c2418, #4a3a22);
+            color: white;
+            border: none;
+            padding: 14px;
+            border-radius: 40px;
+            width: 100%;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 12px;
+            font-size: 1rem;
+        }
+
+        .switch-auth {
+            color: #c9a96b;
+            cursor: pointer;
+            margin-top: 20px;
+            display: inline-block;
+            font-weight: 500;
+        }
+
+        /* Modal */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.4);
+            backdrop-filter: blur(12px);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-container {
+            background: white;
+            border-radius: 48px;
+            max-width: 520px;
+            width: 90%;
+            padding: 36px;
+        }
+
+        .modal-container input,
+        .modal-container select,
+        .modal-container textarea {
+            width: 100%;
+            padding: 14px 18px;
+            margin: 12px 0 20px;
+            border: 1.5px solid #e8dfd0;
+            border-radius: 28px;
+            font-family: inherit;
+            background: #fefcf8;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 70px 20px;
+            background: rgba(255,255,240,0.6);
+            border-radius: 48px;
+            grid-column: 1/-1;
+        }
+
+        .toast {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #2c2418;
+            color: #f5efe6;
+            padding: 12px 28px;
+            border-radius: 60px;
+            font-size: 0.85rem;
+            z-index: 2000;
+            backdrop-filter: blur(20px);
+            font-weight: 500;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        @media (max-width: 680px) {
+            .app-wrapper { padding: 16px; }
+            .timer-digits { font-size: 1.2rem; }
+            .event-title { font-size: 1.2rem; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- AUTH MODAL -->
+<div id="authOverlay" class="auth-overlay">
+    <div class="auth-card">
+        <!-- Logo SVG in auth card -->
+        <svg class="logo-svg" style="margin: 0 auto 20px;" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="50" cy="50" r="48" fill="url(#grad)" stroke="#c9a96b" stroke-width="2"/>
+            <path d="M50 30 L50 50 L65 60" stroke="white" stroke-width="4" stroke-linecap="round" fill="none"/>
+            <circle cx="50" cy="50" r="6" fill="white"/>
+            <defs><linearGradient id="grad" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#c9a96b"/><stop offset="100%" stop-color="#8b6914"/></linearGradient></defs>
+        </svg>
+        <h2 style="font-size: 1.8rem; margin-bottom: 6px;">PRESTIGE CHRONO</h2>
+        <p style="margin-bottom: 28px; color: #9b7b4c;">sign in to begin</p>
+        <div id="authForms">
+            <input type="text" id="authName" placeholder="Your name">
+            <input type="email" id="authEmail" placeholder="Email address" required>
+            <input type="password" id="authPassword" placeholder="Password" required>
+            <button class="auth-btn" id="signUpBtn">→ Create account</button>
+            <div><span class="switch-auth" id="showLoginBtn">Already have an account? Log in</span></div>
+        </div>
+        <div id="loginForms" style="display: none;">
+            <input type="email" id="loginEmail" placeholder="Email address" required>
+            <input type="password" id="loginPassword" placeholder="Password" required>
+            <button class="auth-btn" id="doLoginBtn">→ Log in</button>
+            <div><span class="switch-auth" id="showSignupBtn">Create new account</span></div>
+        </div>
+        <div id="authError" style="color: #b85c38; margin-top: 16px; font-size: 0.8rem;"></div>
+    </div>
+</div>
+
+<!-- MAIN APP -->
+<div id="mainApp" class="app-wrapper hidden">
+    <div class="header">
+        <div class="logo-area">
+            <svg class="logo-svg" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <circle cx="50" cy="50" r="48" fill="url(#gradMain)" stroke="#c9a96b" stroke-width="2"/>
+                <path d="M50 30 L50 50 L65 60" stroke="white" stroke-width="4" stroke-linecap="round" fill="none"/>
+                <circle cx="50" cy="50" r="6" fill="white"/>
+                <defs><linearGradient id="gradMain" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#c9a96b"/><stop offset="100%" stop-color="#8b6914"/></linearGradient></defs>
+            </svg>
+            <div class="logo-text">
+                <h1>PRESTIGE CHRONO</h1>
+                <p>ELEGANT COUNTDOWNS • TIMELESS MOMENTS</p>
+            </div>
+        </div>
+        <div class="user-badge" id="userBadge">
+            <div class="user-avatar" id="avatarPreview">👤</div>
+            <span id="userNameDisplay"></span>
+            <i class="fas fa-chevron-down" style="font-size: 12px; opacity: 0.6;"></i>
+        </div>
+    </div>
+
+    <!-- Stats -->
+    <div class="stats-bar">
+        <div class="stat-card"><span class="stat-number" id="totalCount">0</span><br>Total Events</div>
+        <div class="stat-card"><span class="stat-number" id="upcomingCount">0</span><br>Upcoming</div>
+        <div class="stat-card"><span class="stat-number" id="pastCount">0</span><br>Memories</div>
+    </div>
+
+    <!-- Categories -->
+    <div class="categories-scroll" id="categoryContainer">
+        <div class="pill active" data-cat="all"><i class="fas fa-star"></i> All</div>
+        <div class="pill" data-cat="Birthday"><i class="fas fa-birthday-cake"></i> Birthday</div>
+        <div class="pill" data-cat="Work"><i class="fas fa-briefcase"></i> Work</div>
+        <div class="pill" data-cat="Family"><i class="fas fa-heart"></i> Family</div>
+        <div class="pill" data-cat="Vacation"><i class="fas fa-umbrella-beach"></i> Vacation</div>
+        <div class="pill" data-cat="Custom"><i class="fas fa-gem"></i> Prestige</div>
+    </div>
+
+    <div class="action-bar">
+        <button class="btn-primary" id="openCreateBtn"><i class="fas fa-plus-circle"></i> New countdown</button>
+        <button class="btn-outline-light" id="logoutBtn"><i class="fas fa-sign-out-alt"></i> Exit</button>
+    </div>
+
+    <div id="countdownGrid" class="countdown-grid">
+        <div class="empty-state">
+            <i class="fas fa-hourglass-half" style="font-size: 56px; opacity: 0.4; margin-bottom: 20px;"></i>
+            <h3>No events yet</h3>
+            <p style="margin: 8px 0 20px;">Create your first prestige moment</p>
+            <button class="btn-primary" id="emptyStateBtn">+ Create countdown</button>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL -->
+<div id="eventModal" class="modal-overlay">
+    <div class="modal-container">
+        <h3 id="modalTitle" style="margin-bottom: 8px;">✨ New prestige moment</h3>
+        <input type="text" id="eventName" placeholder="Event name" autocomplete="off">
+        <input type="datetime-local" id="eventDate">
+        <select id="eventCategory">
+            <option>Birthday</option><option>Work</option><option>Family</option>
+            <option>Vacation</option><option>Custom</option>
+        </select>
+        <textarea id="eventNotes" rows="2" placeholder="Add a memory note..."></textarea>
+        <div style="display: flex; gap: 12px; justify-content: flex-end;">
+            <button class="btn-outline-light" id="closeModalBtn">Cancel</button>
+            <button class="btn-primary" id="saveEventBtn">Save</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    // ========== CONFIGURATION ==========
+    // ⚠️ CHANGE THIS TO YOUR BACKEND URL AFTER DEPLOYING TO RENDER ⚠️
+    const API_URL = 'https://your-backend.onrender.com';
+    
+    let token = localStorage.getItem('token');
+    let events = [];
+    let currentFilter = 'all';
+    let editingId = null;
+    let refreshInterval = null;
+
+    function showToast(msg) {
+        let existing = document.querySelector('.toast');
+        if(existing) existing.remove();
+        let div = document.createElement('div');
+        div.className = 'toast';
+        div.innerHTML = msg;
+        document.body.appendChild(div);
+        setTimeout(() => div.remove(), 2500);
+    }
+
+    // Live countdown calculation (updates every second)
+    function getLiveTimeLeft(targetISO) {
+        const now = new Date();
+        const target = new Date(targetISO);
+        if (target <= now) return { text: "✨ Memory", days: 0, hours: 0, minutes: 0, seconds: 0, isPast: true };
+        const diff = target - now;
+        const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+        const hours = Math.floor((diff % (86400000)) / (1000 * 60 * 60));
+        const minutes = Math.floor((diff % (3600000)) / (1000 * 60));
+        const seconds = Math.floor((diff % (60000)) / 1000);
+        return { text: `${days}d ${hours}h ${minutes}m ${seconds}s`, days, hours, minutes, seconds, isPast: false };
+    }
+
+    function renderEvents() {
+        const filtered = currentFilter === 'all' ? events : events.filter(e => e.category === currentFilter);
+        const grid = document.getElementById('countdownGrid');
+        if (!filtered.length) {
+            grid.innerHTML = `<div class="empty-state"><i class="fas fa-hourglass-half" style="font-size:56px;opacity:0.4"></i><h3>No events yet</h3><p>Create your first prestige moment</p><button class="btn-primary" id="emptyStateBtn">+ Create countdown</button></div>`;
+            if(document.getElementById('emptyStateBtn')) document.getElementById('emptyStateBtn').onclick = () => openModal();
+            return;
+        }
+        
+        grid.innerHTML = filtered.map(ev => {
+            const live = getLiveTimeLeft(ev.targetDate);
+            return `
+                <div class="event-card" data-id="${ev.id}">
+                    <div class="card-header">
+                        <span class="event-title">${escapeHtml(ev.name)}</span>
+                        <span class="category-chip"><i class="fas fa-tag"></i> ${ev.category}</span>
+                    </div>
+                    <div class="countdown-timer">
+                        <div class="timer-digits" id="timer-${ev.id}">${live.text}</div>
+                        <div style="font-size:0.7rem; margin-top:6px;">${live.isPast ? 'cherished moment' : 'remaining'}</div>
+                    </div>
+                    <div class="event-date">
+                        <i class="far fa-calendar-alt"></i> ${new Date(ev.targetDate).toLocaleString()}
+                    </div>
+                    ${ev.notes ? `<div class="event-notes"><i class="far fa-pen-to-square"></i> ${escapeHtml(ev.notes)}</div>` : ''}
+                    <div class="card-actions">
+                        <button class="card-action-btn" onclick="deleteEvent('${ev.id}')"><i class="fas fa-trash-alt"></i> Delete</button>
+                        <button class="card-action-btn" onclick="openEditModal('${ev.id}')"><i class="fas fa-edit"></i> Edit</button>
+                    </div>
+                </div>
+            `;
+        }).join('');
+        
+        // Start live timer for each card
+        if(refreshInterval) clearInterval(refreshInterval);
+        refreshInterval = setInterval(() => {
+            events.forEach(ev => {
+                const el = document.getElementById(`timer-${ev.id}`);
+                if(el) {
+                    const live = getLiveTimeLeft(ev.targetDate);
+                    el.innerText = live.text;
+                }
+            });
+        }, 1000);
+        
+        updateStats();
+    }
+
+    function escapeHtml(str) { if(!str) return ''; return str.replace(/[&<>]/g, function(m){ if(m==='&') return '&amp;'; if(m==='<') return '&lt;'; if(m==='>') return '&gt;'; return m;}); }
+    
+    function updateStats() {
+        const now = new Date();
+        const upcoming = events.filter(e => new Date(e.targetDate) > now).length;
+        const past = events.length - upcoming;
+        document.getElementById('totalCount').innerText = events.length;
+        document.getElementById('upcomingCount').innerText = upcoming;
+        document.getElementById('pastCount').innerText = past;
+    }
+    
+    async function loadEvents() {
+        if(!token) return;
+        try {
+            const res = await fetch(`${API_URL}/api/events`, { headers: { 'Authorization': `Bearer ${token}` } });
+            if(res.ok) { events = await res.json(); renderEvents(); }
+            else if(res.status === 401) logout();
+        } catch(e) { console.log('Server not reachable. Make sure backend is deployed.'); }
+    }
+    
+    async function deleteEvent(id) {
+        await fetch(`${API_URL}/api/events/${id}`, { method: 'DELETE', headers: { 'Authorization': `Bearer ${token}` } });
+        loadEvents();
+        showToast('Event removed');
+    }
+    
+    async function saveEvent() {
+        const name = document.getElementById('eventName').value.trim();
+        const targetDate = document.getElementById('eventDate').value;
+        const category = document.getElementById('eventCategory').value;
+        const notes = document.getElementById('eventNotes').value;
+        if(!name || !targetDate) { alert('Please fill all fields'); return; }
+        const body = { name, targetDate, category, notes };
+        
+        if(editingId) {
+            await fetch(`${API_URL}/api/events/${editingId}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                body: JSON.stringify(body)
+            });
+            editingId = null;
+        } else {
+            await fetch(`${API_URL}/api/events`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                body: JSON.stringify(body)
+            });
+        }
+        document.getElementById('eventModal').style.display = 'none';
+        loadEvents();
+        showToast('Saved to the chrono');
+    }
+    
+    function openModal() { editingId = null; document.getElementById('modalTitle').innerHTML = '✨ New prestige moment'; document.getElementById('eventName').value = ''; document.getElementById('eventDate').value = ''; document.getElementById('eventNotes').value = ''; document.getElementById('eventModal').style.display = 'flex'; }
+    
+    function openEditModal(id) { const ev = events.find(e => e.id === id); if(!ev) return; editingId = id; document.getElementById('modalTitle').innerHTML = '✏️ Edit moment'; document.getElementById('eventName').value = ev.name; document.getElementById('eventDate').value = ev.targetDate.slice(0,16); document.getElementById('eventCategory').value = ev.category; document.getElementById('eventNotes').value = ev.notes || ''; document.getElementById('eventModal').style.display = 'flex'; }
+    
+    async function register() {
+        const name = document.getElementById('authName').value;
+        const email = document.getElementById('authEmail').value;
+        const password = document.getElementById('authPassword').value;
+        if(!email || !password) { document.getElementById('authError').innerText = 'Email and password required'; return; }
+        const res = await fetch(`${API_URL}/api/register`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name, email, password }) });
+        const data = await res.json();
+        if(data.token) { token = data.token; localStorage.setItem('token', token); document.getElementById('authOverlay').style.display = 'none'; document.getElementById('mainApp').classList.remove('hidden'); loadEvents(); showToast(`Welcome ${data.user.name || email} to Prestige Chrono`); }
+        else { document.getElementById('authError').innerText = data.error; }
+    }
+    
+    async function login() {
+        const email = document.getElementById('loginEmail').value;
+        const password = document.getElementById('loginPassword').value;
+        const res = await fetch(`${API_URL}/api/login`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email, password }) });
+        const data = await res.json();
+        if(data.token) { token = data.token; localStorage.setItem('token', token); document.getElementById('authOverlay').style.display = 'none'; document.getElementById('mainApp').classList.remove('hidden'); loadEvents(); showToast(`Welcome back ${data.user.name || email}`); }
+        else { document.getElementById('authError').innerText = data.error; }
+    }
+    
+    function logout() { localStorage.removeItem('token'); token = null; document.getElementById('mainApp').classList.add('hidden'); document.getElementById('authOverlay').style.display = 'flex'; if(refreshInterval) clearInterval(refreshInterval); }
+    
+    // Event Listeners
+    document.getElementById('showLoginBtn')?.addEventListener('click', () => { document.getElementById('authForms').style.display = 'none'; document.getElementById('loginForms').style.display = 'block'; document.getElementById('authError').innerText = ''; });
+    document.getElementById('showSignupBtn')?.addEventListener('click', () => { document.getElementById('authForms').style.display = 'block'; document.getElementById('loginForms').style.display = 'none'; document.getElementById('authError').innerText = ''; });
+    document.getElementById('signUpBtn')?.addEventListener('click', register);
+    document.getElementById('doLoginBtn')?.addEventListener('click', login);
+    document.getElementById('logoutBtn')?.addEventListener('click', logout);
+    document.getElementById('openCreateBtn')?.addEventListener('click', openModal);
+    document.getElementById('closeModalBtn')?.addEventListener('click', () => document.getElementById('eventModal').style.display = 'none');
+    document.getElementById('saveEventBtn')?.addEventListener('click', saveEvent);
+    
+    document.querySelectorAll('.pill').forEach(p => p.addEventListener('click', function(){ document.querySelectorAll('.pill').forEach(pi=>pi.classList.remove('active')); this.classList.add('active'); currentFilter = this.dataset.cat; renderEvents(); }));
+    
+    if(token) { document.getElementById('authOverlay').style.display = 'none'; document.getElementById('mainApp').classList.remove('hidden'); loadEvents(); }
+</script>
+</body>
+</html>
