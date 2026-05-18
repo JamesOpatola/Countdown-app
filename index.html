@@ -1,0 +1,631 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>CountdownHub | Ultimate Event Countdown Tracker</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #0a0f1e 0%, #0c1222 100%);
+            min-height: 100vh;
+            color: #eef2ff;
+        }
+
+        /* Auth Overlay */
+        .auth-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(5, 8, 22, 0.96);
+            backdrop-filter: blur(12px);
+            z-index: 2000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s;
+        }
+
+        .auth-card {
+            background: rgba(18, 25, 45, 0.95);
+            border-radius: 2rem;
+            padding: 2rem;
+            width: 90%;
+            max-width: 400px;
+            border: 1px solid #2d3a5e;
+            box-shadow: 0 25px 40px rgba(0,0,0,0.5);
+        }
+
+        .auth-card h2 {
+            margin-bottom: 1rem;
+            font-size: 1.8rem;
+        }
+
+        .auth-card input {
+            width: 100%;
+            padding: 12px 16px;
+            margin: 12px 0;
+            background: #111827;
+            border: 1px solid #334155;
+            border-radius: 40px;
+            color: white;
+            font-size: 1rem;
+        }
+
+        .auth-btn {
+            width: 100%;
+            background: #4f46e5;
+            border: none;
+            padding: 12px;
+            border-radius: 40px;
+            font-weight: 600;
+            color: white;
+            font-size: 1rem;
+            cursor: pointer;
+            margin-top: 8px;
+        }
+
+        .error-msg {
+            color: #f87171;
+            font-size: 0.8rem;
+            margin-top: 8px;
+            text-align: center;
+        }
+
+        /* Main App (hidden until auth) */
+        .main-app {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 1.5rem;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        /* header & premium */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            background: rgba(15, 23, 42, 0.6);
+            backdrop-filter: blur(8px);
+            padding: 1rem 1.8rem;
+            border-radius: 60px;
+            border: 1px solid #2d3a5e;
+        }
+        .logo h1 { font-size: 1.6rem; background: linear-gradient(135deg,#fff,#a5b4fc); -webkit-background-clip: text; background-clip: text; color: transparent; }
+        .user-info { display: flex; align-items: center; gap: 15px; }
+        .avatar { background: #4f46e5; width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; }
+
+        /* category & action row */
+        .action-row {
+            display: flex;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 16px;
+            margin-bottom: 28px;
+            align-items: center;
+        }
+        .cat-filter { display: flex; gap: 10px; flex-wrap: wrap; }
+        .cat-chip {
+            background: #1e293b;
+            padding: 6px 18px;
+            border-radius: 30px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            transition: 0.1s;
+        }
+        .cat-chip.active, .cat-chip:hover { background: #4f46e5; }
+        .btn-primary {
+            background: #4f46e5;
+            border: none;
+            padding: 10px 24px;
+            border-radius: 40px;
+            font-weight: 600;
+            color: white;
+            cursor: pointer;
+        }
+        .btn-secondary { background: #334155; border: none; padding: 10px 20px; border-radius: 40px; cursor: pointer; }
+
+        /* countdown grid */
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(330px, 1fr));
+            gap: 1.8rem;
+            margin-top: 1rem;
+        }
+        .card {
+            background: rgba(17, 24, 39, 0.8);
+            backdrop-filter: blur(12px);
+            border-radius: 1.8rem;
+            padding: 1.4rem;
+            border: 1px solid #334155;
+            transition: transform 0.2s;
+        }
+        .card:hover { transform: translateY(-4px); border-color: #6366f1; }
+        .card-header { display: flex; justify-content: space-between; margin-bottom: 1rem; }
+        .event-title { font-size: 1.4rem; font-weight: 700; }
+        .category-badge { background: #2d3a5e; padding: 4px 10px; border-radius: 20px; font-size: 0.7rem; }
+        .timer-box { text-align: center; margin: 20px 0; background: #0000002e; border-radius: 40px; padding: 12px; }
+        .digits { font-size: 2.2rem; font-weight: 800; font-family: monospace; letter-spacing: 2px; }
+        .note { font-size: 0.75rem; margin-top: 8px; background: #0f172a; padding: 6px 10px; border-radius: 20px; }
+        .card-actions { display: flex; justify-content: flex-end; gap: 12px; margin-top: 12px; }
+        .icon-btn { background: none; border: none; color: #a5b4fc; cursor: pointer; font-size: 1rem; padding: 4px 8px; border-radius: 30px; }
+
+        /* modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(0,0,0,0.8);
+            backdrop-filter: blur(8px);
+            z-index: 3000;
+            align-items: center;
+            justify-content: center;
+        }
+        .modal-card {
+            background: #111827;
+            max-width: 500px;
+            width: 90%;
+            border-radius: 2rem;
+            padding: 2rem;
+            border-top: 4px solid #4f46e5;
+        }
+        .modal-card input, .modal-card select, .modal-card textarea {
+            width: 100%;
+            margin: 8px 0 16px;
+            padding: 10px;
+            background: #1e293b;
+            border: 1px solid #334155;
+            border-radius: 1rem;
+            color: white;
+        }
+
+        .toast {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #1e293b;
+            backdrop-filter: blur(20px);
+            padding: 10px 20px;
+            border-radius: 50px;
+            border-left: 4px solid #4f46e5;
+            z-index: 4000;
+        }
+        .empty-state { text-align: center; padding: 60px; background: #0f172a80; border-radius: 2rem; grid-column: 1/-1; }
+        @media (max-width: 640px) { .header { border-radius: 28px; } .digits { font-size: 1.6rem; } }
+    </style>
+</head>
+<body>
+
+<!-- AUTH MODAL (EMAIL SIGN IN) -->
+<div id="authOverlay" class="auth-overlay">
+    <div class="auth-card">
+        <h2>✨ CountdownHub</h2>
+        <p style="margin-bottom: 20px; opacity:0.8;">Sign in to sync & manage unlimited countdowns</p>
+        <input type="email" id="loginEmail" placeholder="your@email.com" autocomplete="email">
+        <input type="text" id="loginName" placeholder="Your Name (optional)">
+        <button class="auth-btn" id="signInBtn">Continue →</button>
+        <div id="authError" class="error-msg"></div>
+        <p style="font-size: 0.7rem; text-align: center; margin-top: 20px;">🔔 Notifications will be requested after login</p>
+    </div>
+</div>
+
+<!-- MAIN APP (hidden until sign in) -->
+<div id="mainApp" class="main-app">
+    <div class="header">
+        <div class="logo"><h1>⏱️ CountdownHub</h1><span style="font-size: 11px;">unlimited • widgets-ready • cloud sync</span></div>
+        <div class="user-info">
+            <span id="userEmailDisplay"></span>
+            <div class="avatar" id="userAvatar">👤</div>
+            <button class="btn-secondary" id="logoutBtn" style="background:#334155;">Sign out</button>
+        </div>
+    </div>
+
+    <div class="action-row">
+        <div class="cat-filter" id="categoryFilterContainer">
+            <div class="cat-chip active" data-cat="all">All</div>
+            <div class="cat-chip" data-cat="Birthday">🎂 Birthday</div>
+            <div class="cat-chip" data-cat="Work">💼 Work</div>
+            <div class="cat-chip" data-cat="Family">👨‍👩‍👧 Family</div>
+            <div class="cat-chip" data-cat="Vacation">✈️ Vacation</div>
+            <div class="cat-chip" data-cat="Custom">⭐ Custom</div>
+        </div>
+        <div style="display: flex; gap: 10px;">
+            <button class="btn-secondary" id="exportBackupBtn">💾 Cloud Backup</button>
+            <input type="file" id="importFile" accept=".json" style="display:none" />
+            <button class="btn-secondary" id="importBtn">📂 Restore</button>
+            <button class="btn-primary" id="openCreateModal">+ New Countdown</button>
+        </div>
+    </div>
+
+    <div id="countdownGrid" class="grid">
+        <div class="empty-state">✨ Loading your events... create your first countdown!</div>
+    </div>
+</div>
+
+<!-- EDIT/CREATE MODAL -->
+<div id="eventModal" class="modal">
+    <div class="modal-card">
+        <h3 id="modalTitle">➕ Create Event</h3>
+        <input type="text" id="eventName" placeholder="Event name (e.g. Birthday, Launch)" autocomplete="off">
+        <input type="datetime-local" id="eventDate">
+        <select id="eventCategory">
+            <option value="Birthday">🎂 Birthday</option><option value="Work">💼 Work</option>
+            <option value="Family">👨‍👩‍👧 Family</option><option value="Vacation">✈️ Vacation</option>
+            <option value="Custom">⭐ Custom</option>
+        </select>
+        <select id="eventTheme">
+            <option value="default">✨ Default Dark</option><option value="sunset">🌅 Sunset Glow</option>
+            <option value="ocean">🌊 Ocean Breeze</option><option value="forest">🌲 Forest Calm</option>
+        </select>
+        <textarea id="eventNotes" rows="2" placeholder="Memories, notes, story..."></textarea>
+        <div style="display: flex; gap: 12px; justify-content: flex-end; margin-top: 8px;">
+            <button class="btn-secondary" id="closeModalBtn">Cancel</button>
+            <button class="btn-primary" id="saveEventBtn">Save</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    // ------------------- DATA & GLOBAL -------------------
+    let currentUser = null;        // { email, name }
+    let events = [];               // array of event objects
+    let currentFilter = "all";
+    let editingEventId = null;
+    let notificationPermissionGranted = false;
+
+    // Helper functions
+    function showToast(msg, duration = 2500) {
+        let toast = document.querySelector('.toast');
+        if(toast) toast.remove();
+        let div = document.createElement('div');
+        div.className = 'toast';
+        div.innerText = msg;
+        document.body.appendChild(div);
+        setTimeout(() => div.remove(), duration);
+    }
+
+    // Request notification permission
+    async function requestNotificationPermission() {
+        if (!("Notification" in window)) return;
+        if (Notification.permission === "granted") {
+            notificationPermissionGranted = true;
+        } else if (Notification.permission !== "denied") {
+            const permission = await Notification.requestPermission();
+            notificationPermissionGranted = permission === "granted";
+            if (notificationPermissionGranted) showToast("🔔 Notifications enabled! You'll receive reminders.");
+        }
+    }
+
+    // Send browser notification (premium feature: reminders)
+    function sendNotification(eventTitle, message, eventId) {
+        if (!notificationPermissionGranted && Notification.permission === "granted") notificationPermissionGranted = true;
+        if (!notificationPermissionGranted) return;
+        if (document.visibilityState === "visible") {
+            // optional: subtle toast instead of spam when page is open, but still notify.
+        }
+        new Notification(`⏰ Countdown: ${eventTitle}`, { body: message, icon: "https://cdn-icons-png.flaticon.com/512/190/190411.png" });
+    }
+
+    // check for upcoming events and trigger notifications (1 day before and 1 hour before)
+    function checkUpcomingNotifications() {
+        if (!currentUser) return;
+        const now = new Date();
+        events.forEach(event => {
+            const target = new Date(event.targetDate);
+            if (target <= now) return; // only future
+            
+            const diffMs = target - now;
+            const hoursLeft = diffMs / (1000 * 60 * 60);
+            const daysLeft = hoursLeft / 24;
+            
+            // 1 day before ± 5 min window to avoid spamming every check (check flag)
+            if (daysLeft <= 1.01 && daysLeft >= 0.98 && !event.notifiedDayBefore) {
+                sendNotification(event.name, `Starts in less than 1 day! 📅 ${target.toLocaleString()}`, event.id);
+                event.notifiedDayBefore = true;
+                saveToLocalStorage();
+            }
+            // 1 hour before
+            if (hoursLeft <= 1.05 && hoursLeft >= 0.95 && !event.notifiedHourBefore) {
+                sendNotification(event.name, `Starting in 1 hour! ⏳ Get ready.`, event.id);
+                event.notifiedHourBefore = true;
+                saveToLocalStorage();
+            }
+        });
+    }
+
+    // get time left string (count-up if past)
+    function getTimeLabel(targetISO) {
+        const now = new Date();
+        const target = new Date(targetISO);
+        const isPast = target < now;
+        const diff = Math.abs(target - now);
+        const seconds = Math.floor(diff / 1000);
+        const minutes = Math.floor(seconds / 60);
+        const hours = Math.floor(minutes / 60);
+        const days = Math.floor(hours / 24);
+        const months = Math.floor(days / 30.44);
+        const years = Math.floor(days / 365.25);
+        
+        if (!isPast) {
+            if (years > 0) return `${years} year${years>1?'s':''}`;
+            if (months > 0) return `${months} month${months>1?'s':''}`;
+            if (days > 0) return `${days} day${days>1?'s':''}`;
+            if (hours > 0) return `${hours} hour${hours>1?'s':''}`;
+            if (minutes > 0) return `${minutes} minute${minutes>1?'s':''}`;
+            return `${seconds} sec`;
+        } else {
+            if (years > 0) return `${years} year ago`;
+            if (months > 0) return `${months} month ago`;
+            if (days > 0) return `${days} day ago`;
+            if (hours > 0) return `${hours} hour ago`;
+            return `${minutes} min ago`;
+        }
+    }
+
+    // style background
+    function getCardTheme(theme) {
+        switch(theme) {
+            case "sunset": return "linear-gradient(135deg, #b23c1c, #e28a3e)";
+            case "ocean": return "linear-gradient(135deg, #0f4c5f, #2b7a62)";
+            case "forest": return "linear-gradient(135deg, #1b4d2e, #4a7c59)";
+            default: return "rgba(17, 24, 39, 0.9)";
+        }
+    }
+
+    function renderEvents() {
+        const filtered = currentFilter === "all" ? events : events.filter(ev => ev.category === currentFilter);
+        const grid = document.getElementById("countdownGrid");
+        if (!filtered.length) {
+            grid.innerHTML = `<div class="empty-state">📭 No events in this category. Click "+ New Countdown" to start.</div>`;
+            return;
+        }
+        grid.innerHTML = filtered.map(ev => {
+            const timeStr = getTimeLabel(ev.targetDate);
+            const targetDateObj = new Date(ev.targetDate);
+            const isUpcoming = targetDateObj > new Date();
+            const bgGrad = getCardTheme(ev.theme || "default");
+            return `
+                <div class="card" style="background: ${bgGrad}; backdrop-filter: blur(4px);" data-id="${ev.id}">
+                    <div class="card-header">
+                        <span class="event-title">${escapeHtml(ev.name)}</span>
+                        <span class="category-badge">${ev.category}</span>
+                    </div>
+                    <div class="timer-box">
+                        <div class="digits">${escapeHtml(timeStr)}</div>
+                        <div style="font-size: 0.7rem;">${isUpcoming ? 'until event' : 'since event'}</div>
+                    </div>
+                    <div style="font-size:0.75rem; display:flex; justify-content:space-between;">
+                        <span>📅 ${targetDateObj.toLocaleDateString()}</span>
+                        <span>${isUpcoming ? '🔔 reminder active' : '📜 memory'}</span>
+                    </div>
+                    ${ev.notes ? `<div class="note">📝 ${escapeHtml(ev.notes.substring(0, 80))}</div>` : ''}
+                    <div class="card-actions">
+                        <button class="icon-btn share-event" data-id="${ev.id}">🔗 Share</button>
+                        <button class="icon-btn edit-event" data-id="${ev.id}">✏️ Edit</button>
+                        <button class="icon-btn delete-event" data-id="${ev.id}">🗑️ Del</button>
+                        <button class="icon-btn notify-test" data-id="${ev.id}">🔔 Test</button>
+                    </div>
+                </div>
+            `;
+        }).join('');
+        
+        // attach dynamic events
+        document.querySelectorAll('.edit-event').forEach(btn => btn.addEventListener('click', (e) => openEditModal(btn.dataset.id)));
+        document.querySelectorAll('.delete-event').forEach(btn => btn.addEventListener('click', (e) => deleteEvent(btn.dataset.id)));
+        document.querySelectorAll('.share-event').forEach(btn => btn.addEventListener('click', (e) => shareEvent(btn.dataset.id)));
+        document.querySelectorAll('.notify-test').forEach(btn => btn.addEventListener('click', (e) => {
+            const ev = events.find(evt => evt.id === btn.dataset.id);
+            if(ev) sendNotification(ev.name, `Countdown: ${getTimeLabel(ev.targetDate)} left`, ev.id);
+            else showToast("event not found");
+        }));
+    }
+
+    function escapeHtml(str) { if(!str) return ''; return str.replace(/[&<>]/g, function(m){if(m==='&') return '&amp;'; if(m==='<') return '&lt;'; if(m==='>') return '&gt;'; return m;}); }
+
+    // CRUD + persistence using localStorage (per user)
+    function saveToLocalStorage() {
+        if(!currentUser) return;
+        const storageKey = `countdown_user_${currentUser.email}`;
+        localStorage.setItem(storageKey, JSON.stringify({ user: currentUser, events: events }));
+        // also sync to localStorage cross-device simulation
+    }
+
+    function loadUserData() {
+        if(!currentUser) return;
+        const storageKey = `countdown_user_${currentUser.email}`;
+        const raw = localStorage.getItem(storageKey);
+        if(raw) {
+            try {
+                const parsed = JSON.parse(raw);
+                events = parsed.events || [];
+                // ensure each event has flags for notifications
+                events = events.map(ev => ({ ...ev, notifiedDayBefore: ev.notifiedDayBefore || false, notifiedHourBefore: ev.notifiedHourBefore || false }));
+            } catch(e) { events = []; }
+        } else {
+            // default sample events for premium feel
+            events = [
+                { id: "1", name: "New Year 2026", targetDate: "2026-01-01T00:00", category: "Custom", notes: "Celebration night", theme: "sunset", notifiedDayBefore: false, notifiedHourBefore: false },
+                { id: "2", name: "Product Launch", targetDate: "2025-07-20T10:00", category: "Work", notes: "Live stream", theme: "ocean", notifiedDayBefore: false, notifiedHourBefore: false },
+                { id: "3", name: "Beach Vacation", targetDate: "2025-09-01T08:00", category: "Vacation", notes: "Pack your bags", theme: "forest", notifiedDayBefore: false, notifiedHourBefore: false }
+            ];
+        }
+        renderEvents();
+        startNotificationChecker();
+    }
+
+    function addOrUpdateEvent(eventData) {
+        if(editingEventId) {
+            const index = events.findIndex(e => e.id === editingEventId);
+            if(index !== -1) {
+                events[index] = { ...events[index], ...eventData, id: editingEventId };
+            }
+            editingEventId = null;
+        } else {
+            const newId = Date.now().toString();
+            events.push({ id: newId, ...eventData, notifiedDayBefore: false, notifiedHourBefore: false });
+        }
+        saveToLocalStorage();
+        renderEvents();
+        showToast("✅ Event saved! Cloud sync ready.");
+    }
+
+    function deleteEvent(id) {
+        events = events.filter(ev => ev.id !== id);
+        saveToLocalStorage();
+        renderEvents();
+        showToast("🗑️ Event removed");
+    }
+
+    function openEditModal(id) {
+        const ev = events.find(e => e.id === id);
+        if(!ev) return;
+        editingEventId = id;
+        document.getElementById("modalTitle").innerText = "✏️ Edit Countdown";
+        document.getElementById("eventName").value = ev.name;
+        document.getElementById("eventDate").value = ev.targetDate.slice(0,16);
+        document.getElementById("eventCategory").value = ev.category;
+        document.getElementById("eventTheme").value = ev.theme || "default";
+        document.getElementById("eventNotes").value = ev.notes || "";
+        document.getElementById("eventModal").style.display = "flex";
+    }
+
+    function shareEvent(id) {
+        const ev = events.find(e => e.id === id);
+        if(ev) {
+            const shareText = `🎉 Countdown: ${ev.name} on ${new Date(ev.targetDate).toLocaleString()} - ${getTimeLabel(ev.targetDate)} left! Track with CountdownHub.`;
+            if (navigator.share) navigator.share({ title: ev.name, text: shareText }).catch(()=>{});
+            else navigator.clipboard.writeText(shareText).then(()=>showToast("📋 Event details copied!"));
+        }
+    }
+
+    // export backup (cloud sync)
+    function exportBackup() {
+        const exportObj = { user: currentUser, events: events, version: "1.0" };
+        const dataStr = JSON.stringify(exportObj, null, 2);
+        const blob = new Blob([dataStr], {type: "application/json"});
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `countdown_backup_${currentUser.email}.json`;
+        a.click();
+        URL.revokeObjectURL(url);
+        showToast("☁️ Cloud backup exported");
+    }
+    function importBackup(file) {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            try {
+                const parsed = JSON.parse(e.target.result);
+                if(parsed.events && Array.isArray(parsed.events) && parsed.user?.email === currentUser.email) {
+                    events = parsed.events.map(ev => ({ ...ev, notifiedDayBefore: false, notifiedHourBefore: false }));
+                    saveToLocalStorage();
+                    renderEvents();
+                    showToast(`✅ Restored ${events.length} events`);
+                } else { throw new Error("invalid or different account"); }
+            } catch(err) { alert("Invalid backup file"); }
+        };
+        reader.readAsText(file);
+    }
+
+    // periodic notification checker
+    let intervalId = null;
+    function startNotificationChecker() {
+        if(intervalId) clearInterval(intervalId);
+        intervalId = setInterval(() => {
+            if(currentUser) checkUpcomingNotifications();
+        }, 60000); // check every minute
+    }
+
+    // Auth handlers
+    function handleSignIn(email, name) {
+        if(!email || !email.includes('@')) { document.getElementById("authError").innerText = "Valid email required"; return; }
+        currentUser = { email: email.trim(), name: name.trim() || email.split('@')[0] };
+        document.getElementById("userEmailDisplay").innerText = currentUser.name;
+        document.getElementById("userAvatar").innerText = currentUser.name.charAt(0).toUpperCase();
+        document.getElementById("authOverlay").style.display = "none";
+        document.getElementById("mainApp").style.opacity = "1";
+        loadUserData();
+        requestNotificationPermission();
+    }
+
+    function logout() {
+        if(intervalId) clearInterval(intervalId);
+        currentUser = null;
+        events = [];
+        document.getElementById("authOverlay").style.display = "flex";
+        document.getElementById("mainApp").style.opacity = "0";
+        localStorage.removeItem("countdown_current_session");
+    }
+
+    // Event listeners & init
+    document.getElementById("signInBtn").onclick = () => {
+        const email = document.getElementById("loginEmail").value;
+        const name = document.getElementById("loginName").value;
+        handleSignIn(email, name);
+    };
+    document.getElementById("logoutBtn").onclick = logout;
+    document.getElementById("openCreateModal").onclick = () => {
+        editingEventId = null;
+        document.getElementById("modalTitle").innerText = "➕ Create Countdown";
+        document.getElementById("eventName").value = "";
+        document.getElementById("eventDate").value = "";
+        document.getElementById("eventCategory").value = "Custom";
+        document.getElementById("eventTheme").value = "default";
+        document.getElementById("eventNotes").value = "";
+        document.getElementById("eventModal").style.display = "flex";
+    };
+    document.getElementById("closeModalBtn").onclick = () => document.getElementById("eventModal").style.display = "none";
+    document.getElementById("saveEventBtn").onclick = () => {
+        const name = document.getElementById("eventName").value.trim();
+        const targetDate = document.getElementById("eventDate").value;
+        if(!name || !targetDate) { alert("Event name and date required"); return; }
+        addOrUpdateEvent({
+            name, targetDate,
+            category: document.getElementById("eventCategory").value,
+            theme: document.getElementById("eventTheme").value,
+            notes: document.getElementById("eventNotes").value
+        });
+        document.getElementById("eventModal").style.display = "none";
+    };
+    document.getElementById("exportBackupBtn").onclick = exportBackup;
+    document.getElementById("importBtn").onclick = () => document.getElementById("importFile").click();
+    document.getElementById("importFile").onchange = (e) => { if(e.target.files[0]) importBackup(e.target.files[0]); e.target.value = ''; };
+    
+    // category filter
+    document.querySelectorAll('.cat-chip').forEach(btn => {
+        btn.addEventListener('click', () => {
+            document.querySelectorAll('.cat-chip').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            currentFilter = btn.dataset.cat;
+            renderEvents();
+        });
+    });
+    window.onclick = (e) => { if(e.target === document.getElementById("eventModal")) document.getElementById("eventModal").style.display = "none"; };
+    
+    // check for existing session
+    if(localStorage.getItem("countdown_current_session")) {
+        try{
+            const sess = JSON.parse(localStorage.getItem("countdown_current_session"));
+            if(sess.email) handleSignIn(sess.email, sess.name);
+        }catch(e){}
+    }
+    window.addEventListener("beforeunload", ()=>{
+        if(currentUser) localStorage.setItem("countdown_current_session", JSON.stringify({ email: currentUser.email, name: currentUser.name }));
+    });
+</script>
+</body>
+</html>
