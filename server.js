@@ -9,19 +9,23 @@ require('dotenv').config();
 
 const app = express();
 app.use(express.json());
-app.use(cors());
+app.use(cors({
+    origin: '*',
+    credentials: true
+}));
 
-// ========== MongoDB Connection ==========
+// MongoDB Connection
 mongoose.connect(process.env.MONGODB_URI)
   .then(() => console.log('✅ MongoDB connected'))
   .catch(err => console.log('❌ MongoDB error:', err));
 
-// ========== Schemas ==========
+// Schemas
 const userSchema = new mongoose.Schema({
   email: { type: String, required: true, unique: true },
   password: { type: String, required: true },
   name: { type: String },
-  createdAt: { type: Date, default: Date.now }
+  createdAt: { type: Date, default: Date.now },
+  lastEmailSent: { type: Date }
 });
 
 const eventSchema = new mongoose.Schema({
@@ -29,34 +33,31 @@ const eventSchema = new mongoose.Schema({
   name: { type: String, required: true },
   targetDate: { type: Date, required: true },
   category: { type: String, default: 'Custom' },
-  notes: { type: String },
-  lastEmailSent: { type: Date, default: null } // Track when we last emailed
+  notes: { type: String }
 });
 
 const User = mongoose.model('User', userSchema);
 const Event = mongoose.model('Event', eventSchema);
 
-// ========== Email Setup (Gmail) ==========
+// Email Setup
 const transporter = nodemailer.createTransport({
   service: 'gmail',
   auth: {
     user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS  // Gmail App Password
+    pass: process.env.EMAIL_PASS
   }
 });
 
-// ========== Send Email Function ==========
-async function sendDailyCountdownEmail(userEmail, userName, events) {
+async function sendDailyEmail(userEmail, userName, events) {
   if (events.length === 0) return;
   
-  // Build HTML for all events
   let eventsHTML = '';
   for (const event of events) {
     const now = new Date();
     const target = new Date(event.targetDate);
     const diffMs = target - now;
     
-    if (diffMs <= 0) continue; // Skip past events
+    if (diffMs <= 0) continue;
     
     const days = Math.floor(diffMs / (1000 * 60 * 60 * 24));
     const hours = Math.floor((diffMs % (86400000)) / (1000 * 60 * 60));
@@ -64,103 +65,46 @@ async function sendDailyCountdownEmail(userEmail, userName, events) {
     const seconds = Math.floor((diffMs % (60000)) / 1000);
     
     eventsHTML += `
-      <div style="background: #fefce8; padding: 15px; margin: 10px 0; border-radius: 16px; border-left: 4px solid #d97706;">
-        <h3 style="margin: 0 0 8px 0; color: #1e1b2e;">🎯 ${event.name}</h3>
-        <p style="margin: 5px 0; color: #d97706; font-size: 20px; font-weight: bold;">
+      <div style="background: #f5efe6; padding: 15px; margin: 10px 0; border-radius: 16px; border-left: 4px solid #c9a96b;">
+        <h3 style="margin: 0 0 8px 0;">🎯 ${event.name}</h3>
+        <p style="margin: 5px 0; color: #c9a96b; font-size: 20px; font-weight: bold;">
           ${days} days, ${hours} hours, ${minutes} minutes, ${seconds} seconds
         </p>
-        <p style="margin: 5px 0; color: #78716c;">📅 ${target.toLocaleDateString()} at ${target.toLocaleTimeString()}</p>
-        ${event.notes ? `<p style="margin: 5px 0; color: #78716c;">📝 ${event.notes}</p>` : ''}
+        <p style="margin: 5px 0; color: #666;">📅 ${target.toLocaleDateString()}</p>
       </div>
     `;
   }
   
-  const htmlContent = `
-    <!DOCTYPE html>
-    <html>
-    <head>
-      <style>
-        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #fef9e3; padding: 20px; }
-        .container { max-width: 600px; margin: 0 auto; background: white; border-radius: 32px; padding: 30px; }
-        .header { text-align: center; margin-bottom: 30px; }
-        .footer { text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid #f0ead8; color: #a8a29e; font-size: 12px; }
-      </style>
-    </head>
-    <body>
-      <div class="container">
-        <div class="header">
-          <h1 style="color: #d97706;">⏰ memoir</h1>
-          <p>Your daily countdown update</p>
-        </div>
-        <p>Good ${getTimeOfDay()}, ${userName || userEmail.split('@')[0]}! 👋</p>
-        <p>Here's how much time left until your special moments:</p>
-        ${eventsHTML}
-        <div class="footer">
-          <p>You're receiving this because you have active countdowns.</p>
-          <p><a href="${process.env.APP_URL}" style="color: #d97706;">Open memoir app →</a></p>
-        </div>
-      </div>
-    </body>
-    </html>
-  `;
-  
   await transporter.sendMail({
-    from: `"memoir" <${process.env.EMAIL_USER}>`,
+    from: `"Prestige Chrono" <${process.env.EMAIL_USER}>`,
     to: userEmail,
-    subject: `✨ Daily countdown: ${events.length} event${events.length > 1 ? 's' : ''} remaining`,
-    html: htmlContent
+    subject: `⏰ Daily countdown: ${events.length} event${events.length > 1 ? 's' : ''} remaining`,
+    html: `
+      <div style="font-family: system-ui; max-width: 600px; margin: 0 auto;">
+        <h1 style="color: #c9a96b;">Prestige Chrono</h1>
+        <p>Hello ${userName || userEmail.split('@')[0]}!</p>
+        <p>Here's your daily countdown update:</p>
+        ${eventsHTML}
+        <p style="margin-top: 30px; color: #999;">Stay tuned for your special moments ✨</p>
+      </div>
+    `
   });
 }
 
-function getTimeOfDay() {
-  const hour = new Date().getHours();
-  if (hour < 12) return 'morning';
-  if (hour < 18) return 'afternoon';
-  return 'evening';
-}
-
-// ========== Cron Job: Send emails at 12:00 AM daily ==========
+// Cron Job: Daily at Midnight
 cron.schedule('0 0 * * *', async () => {
-  console.log('📧 Running daily email job at midnight...');
-  
+  console.log('📧 Sending daily emails...');
   const users = await User.find();
-  
   for (const user of users) {
-    const events = await Event.find({
-      userId: user._id,
-      targetDate: { $gt: new Date() } // Only future events
-    });
-    
+    const events = await Event.find({ userId: user._id, targetDate: { $gt: new Date() } });
     if (events.length > 0) {
-      // Check if we sent email today
-      const today = new Date().toDateString();
-      const lastSent = user.lastEmailSent ? new Date(user.lastEmailSent).toDateString() : null;
-      
-      if (lastSent !== today) {
-        await sendDailyCountdownEmail(user.email, user.name, events);
-        user.lastEmailSent = new Date();
-        await user.save();
-        console.log(`📨 Email sent to ${user.email}`);
-      }
+      await sendDailyEmail(user.email, user.name, events);
+      console.log(`📨 Email sent to ${user.email}`);
     }
   }
 });
 
-// Also send on server startup (for testing)
-setTimeout(async () => {
-  console.log('🔔 Checking for midnight emails on startup...');
-  const now = new Date();
-  if (now.getHours() === 0) {
-    // Trigger the cron manually
-    const users = await User.find();
-    for (const user of users) {
-      const events = await Event.find({ userId: user._id, targetDate: { $gt: new Date() } });
-      if (events.length > 0) await sendDailyCountdownEmail(user.email, user.name, events);
-    }
-  }
-}, 5000);
-
-// ========== AUTH ROUTES ==========
+// Auth Routes
 app.post('/api/register', async (req, res) => {
   try {
     const { email, password, name } = req.body;
@@ -194,7 +138,7 @@ app.post('/api/login', async (req, res) => {
   }
 });
 
-// ========== EVENT ROUTES ==========
+// Event Routes
 const authMiddleware = async (req, res, next) => {
   const token = req.headers.authorization?.split(' ')[1];
   if (!token) return res.status(401).json({ error: 'Unauthorized' });
