@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>Prestige Chrono — Exam Countdowns</title>
+    <title>Prestige Chrono — Countdown to Your Special Moments</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <style>
@@ -87,7 +87,7 @@
             <defs><linearGradient id="grad" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#7c3aed"/><stop offset="100%" stop-color="#4c1d95"/></linearGradient></defs>
         </svg>
         <h2 style="margin-bottom: 6px; background: linear-gradient(135deg, #4c1d95, #7c3aed); -webkit-background-clip: text; background-clip: text; color: transparent;">PRESTIGE CHRONO</h2>
-        <p style="margin-bottom: 28px; color: #6b7280;">exam countdown • track your success</p>
+        <p style="margin-bottom: 28px; color: #6b7280;">countdown to your special moments</p>
         <div id="authForms">
             <input type="text" id="authName" placeholder="Your name">
             <input type="email" id="authEmail" placeholder="Email address" required>
@@ -98,6 +98,9 @@
         <div id="loginForms" style="display: none;">
             <input type="email" id="loginEmail" placeholder="Email address" required>
             <input type="password" id="loginPassword" placeholder="Password" required>
+            <div style="text-align: right; margin: 5px 0 15px;">
+                <span class="switch-auth" id="forgotPasswordBtn" style="font-size: 0.75rem;">Forgot password?</span>
+            </div>
             <button class="auth-btn" id="doLoginBtn">→ Log in</button>
             <div><span class="switch-auth" id="showSignupBtn">Create new account</span></div>
         </div>
@@ -117,7 +120,7 @@
             </svg>
             <div class="logo-text">
                 <h1>PRESTIGE CHRONO</h1>
-                <p>EXAM COUNTDOWN • TRACK YOUR SUCCESS</p>
+                <p>COUNTDOWN TO YOUR SPECIAL MOMENTS</p>
             </div>
         </div>
         <div class="user-badge">
@@ -135,14 +138,13 @@
 
     <div class="categories-scroll" id="categoryContainer">
         <div class="pill active" data-cat="all"><i class="fas fa-star"></i> All</div>
-        <div class="pill" data-cat="Exam"><i class="fas fa-graduation-cap"></i> Exam</div>
-        <div class="pill" data-cat="School"><i class="fas fa-school"></i> School</div>
-        <div class="pill" data-cat="Assignment"><i class="fas fa-tasks"></i> Assignment</div>
-        <div class="pill" data-cat="Study"><i class="fas fa-book"></i> Study</div>
+        <div class="pill" data-cat="Event"><i class="fas fa-calendar-day"></i> Event</div>
         <div class="pill" data-cat="Birthday"><i class="fas fa-birthday-cake"></i> Birthday</div>
+        <div class="pill" data-cat="Wedding"><i class="fas fa-heart"></i> Wedding</div>
+        <div class="pill" data-cat="Exam"><i class="fas fa-graduation-cap"></i> Exam</div>
         <div class="pill" data-cat="Work"><i class="fas fa-briefcase"></i> Work</div>
-        <div class="pill" data-cat="Family"><i class="fas fa-heart"></i> Family</div>
         <div class="pill" data-cat="Vacation"><i class="fas fa-umbrella-beach"></i> Vacation</div>
+        <div class="pill" data-cat="Family"><i class="fas fa-users"></i> Family</div>
         <div class="pill" data-cat="Custom"><i class="fas fa-gem"></i> Custom</div>
     </div>
 
@@ -152,28 +154,27 @@
     </div>
 
     <div id="countdownGrid" class="countdown-grid">
-        <div class="empty-state"><i class="fas fa-hourglass-half" style="font-size:56px;opacity:0.4;margin-bottom:20px;color:#7c3aed;"></i><h3>No events yet</h3><p>Create your first exam countdown</p><button class="btn-primary" id="emptyStateBtn">+ Create countdown</button></div>
+        <div class="empty-state"><i class="fas fa-hourglass-half" style="font-size:56px;opacity:0.4;margin-bottom:20px;color:#7c3aed;"></i><h3>No events yet</h3><p>Create your first countdown</p><button class="btn-primary" id="emptyStateBtn">+ Create countdown</button></div>
     </div>
 </div>
 
 <!-- MODAL -->
 <div id="eventModal" class="modal-overlay">
     <div class="modal-container">
-        <h3 id="modalTitle" style="margin-bottom: 8px;">📚 New exam countdown</h3>
-        <input type="text" id="eventName" placeholder="Event name (e.g., Final Exam, SAT, Midterms)">
+        <h3 id="modalTitle" style="margin-bottom: 8px;">✨ Create new countdown</h3>
+        <input type="text" id="eventName" placeholder="Event name (e.g., Birthday, Wedding, Exam)">
         <input type="datetime-local" id="eventDate">
         <select id="eventCategory">
-            <option value="Exam">📝 Exam</option>
-            <option value="School">🏫 School</option>
-            <option value="Assignment">📋 Assignment</option>
-            <option value="Study">📖 Study</option>
+            <option value="Event">📅 Event</option>
             <option value="Birthday">🎂 Birthday</option>
+            <option value="Wedding">💍 Wedding</option>
+            <option value="Exam">📚 Exam</option>
             <option value="Work">💼 Work</option>
-            <option value="Family">👨‍👩‍👧 Family</option>
             <option value="Vacation">✈️ Vacation</option>
+            <option value="Family">👨‍👩‍👧 Family</option>
             <option value="Custom">✨ Custom</option>
         </select>
-        <textarea id="eventNotes" rows="2" placeholder="Subject, room number, things to bring..."></textarea>
+        <textarea id="eventNotes" rows="2" placeholder="Add a note..."></textarea>
         <div style="display: flex; gap: 12px; justify-content: flex-end;">
             <button class="btn-outline-light" id="closeModalBtn">Cancel</button>
             <button class="btn-primary" id="saveEventBtn">Save</button>
@@ -204,7 +205,7 @@
     function getLiveTimeLeft(targetISO) {
         const now = new Date();
         const target = new Date(targetISO);
-        if (target <= now) return { text: "✅ Completed", isPast: true };
+        if (target <= now) return { text: "✨ Completed", isPast: true };
         const diff = target - now;
         const days = Math.floor(diff / (1000 * 60 * 60 * 24));
         const hours = Math.floor((diff % (86400000)) / (1000 * 60 * 60));
@@ -223,7 +224,7 @@
         document.getElementById('pastCount').innerText = events.length - upcoming;
         
         if (!filtered.length) {
-            grid.innerHTML = `<div class="empty-state"><i class="fas fa-hourglass-half" style="font-size:56px;opacity:0.4;margin-bottom:20px;color:#7c3aed;"></i><h3>No events yet</h3><p>Create your first exam countdown</p><button class="btn-primary" id="emptyStateBtn">+ Create countdown</button></div>`;
+            grid.innerHTML = `<div class="empty-state"><i class="fas fa-hourglass-half" style="font-size:56px;opacity:0.4;margin-bottom:20px;color:#7c3aed;"></i><h3>No events yet</h3><p>Create your first countdown</p><button class="btn-primary" id="emptyStateBtn">+ Create countdown</button></div>`;
             if(document.getElementById('emptyStateBtn')) document.getElementById('emptyStateBtn').onclick = () => openModal();
             return;
         }
@@ -239,7 +240,7 @@
                     </div>
                     <div class="countdown-timer">
                         <div class="timer-digits" id="timer-${ev.id}">${live.text}</div>
-                        <div style="font-size:0.7rem; margin-top:6px;">${live.isPast ? 'exam completed' : 'until exam day'}</div>
+                        <div style="font-size:0.7rem; margin-top:6px;">${live.isPast ? 'event completed' : 'until event'}</div>
                     </div>
                     <div class="event-date"><i class="far fa-calendar-alt"></i> ${new Date(ev.targetDate).toLocaleString()}</div>
                     ${ev.notes ? `<div class="event-notes"><i class="far fa-pen-to-square"></i> ${escapeHtml(ev.notes)}</div>` : ''}
@@ -262,8 +263,8 @@
 
     function getCategoryIcon(category) {
         const icons = {
-            'Exam': '📝', 'School': '🏫', 'Assignment': '📋', 'Study': '📖',
-            'Birthday': '🎂', 'Work': '💼', 'Family': '👨‍👩‍👧', 'Vacation': '✈️', 'Custom': '✨'
+            'Event': '📅', 'Birthday': '🎂', 'Wedding': '💍', 'Exam': '📚',
+            'Work': '💼', 'Vacation': '✈️', 'Family': '👨‍👩‍👧', 'Custom': '✨'
         };
         return icons[category] || '📌';
     }
@@ -301,11 +302,11 @@
         }
         document.getElementById('eventModal').style.display = 'none';
         loadEvents();
-        showToast('Exam countdown saved!');
+        showToast('Countdown saved!');
     }
     
-    function openModal() { editingId = null; document.getElementById('modalTitle').innerHTML = '📚 New exam countdown'; document.getElementById('eventName').value = ''; document.getElementById('eventDate').value = ''; document.getElementById('eventNotes').value = ''; document.getElementById('eventModal').style.display = 'flex'; }
-    function openEditModal(id) { const ev = events.find(e => e.id === id); if(!ev) return; editingId = id; document.getElementById('modalTitle').innerHTML = '✏️ Edit exam'; document.getElementById('eventName').value = ev.name; document.getElementById('eventDate').value = ev.targetDate.slice(0,16); document.getElementById('eventCategory').value = ev.category; document.getElementById('eventNotes').value = ev.notes || ''; document.getElementById('eventModal').style.display = 'flex'; }
+    function openModal() { editingId = null; document.getElementById('modalTitle').innerHTML = '✨ Create new countdown'; document.getElementById('eventName').value = ''; document.getElementById('eventDate').value = ''; document.getElementById('eventNotes').value = ''; document.getElementById('eventModal').style.display = 'flex'; }
+    function openEditModal(id) { const ev = events.find(e => e.id === id); if(!ev) return; editingId = id; document.getElementById('modalTitle').innerHTML = '✏️ Edit event'; document.getElementById('eventName').value = ev.name; document.getElementById('eventDate').value = ev.targetDate.slice(0,16); document.getElementById('eventCategory').value = ev.category; document.getElementById('eventNotes').value = ev.notes || ''; document.getElementById('eventModal').style.display = 'flex'; }
     
     async function register() {
         const name = document.getElementById('authName').value;
@@ -323,7 +324,7 @@
                 document.getElementById('userNameDisplay').innerText = data.user.name || data.user.email;
                 document.getElementById('avatarPreview').innerText = (data.user.name || data.user.email).charAt(0).toUpperCase();
                 loadEvents(); 
-                showToast(`Welcome ${name || email}! Start tracking your exams!`); 
+                showToast(`Welcome ${name || email}!`); 
             } else { 
                 document.getElementById('authError').innerText = data.error || 'Registration failed'; 
             }
@@ -344,11 +345,31 @@
                 document.getElementById('userNameDisplay').innerText = data.user.name || data.user.email;
                 document.getElementById('avatarPreview').innerText = (data.user.name || data.user.email).charAt(0).toUpperCase();
                 loadEvents(); 
-                showToast(`Welcome back! Ready for your exams?`); 
+                showToast(`Welcome back!`); 
             } else { 
                 document.getElementById('authError').innerText = data.error || 'Login failed'; 
             }
         } catch(e) { document.getElementById('authError').innerText = 'Cannot connect to server.'; }
+    }
+    
+    async function forgotPassword() {
+        const email = prompt('Enter your email address:');
+        if (!email) return;
+        try {
+            const res = await fetch(`${API_URL}/api/forgot-password`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email })
+            });
+            const data = await res.json();
+            if (res.ok) {
+                alert('Password reset email sent! Check your inbox.');
+            } else {
+                alert(data.error || 'Failed to send reset email');
+            }
+        } catch(e) {
+            alert('Error sending reset email');
+        }
     }
     
     function logout() { localStorage.removeItem('token'); token = null; document.getElementById('mainApp').classList.add('hidden'); document.getElementById('authOverlay').style.display = 'flex'; if(refreshInterval) clearInterval(refreshInterval); }
@@ -357,13 +378,14 @@
     document.getElementById('showSignupBtn')?.addEventListener('click', () => { document.getElementById('authForms').style.display = 'block'; document.getElementById('loginForms').style.display = 'none'; document.getElementById('authError').innerText = ''; });
     document.getElementById('signUpBtn')?.addEventListener('click', register);
     document.getElementById('doLoginBtn')?.addEventListener('click', login);
+    document.getElementById('forgotPasswordBtn')?.addEventListener('click', forgotPassword);
     document.getElementById('logoutBtn')?.addEventListener('click', logout);
     document.getElementById('openCreateBtn')?.addEventListener('click', openModal);
     document.getElementById('closeModalBtn')?.addEventListener('click', () => document.getElementById('eventModal').style.display = 'none');
     document.getElementById('saveEventBtn')?.addEventListener('click', saveEvent);
     
     document.querySelectorAll('.pill').forEach(p => p.addEventListener('click', function(){ document.querySelectorAll('.pill').forEach(pi=>pi.classList.remove('active')); this.classList.add('active'); currentFilter = this.dataset.cat; renderEvents(); }));
-    
+    <!-- Created by Opatola James on Tue May 19 12:23:53 WAT 2026  -->
     if(token) { document.getElementById('authOverlay').style.display = 'none'; document.getElementById('mainApp').classList.remove('hidden'); loadEvents(); }
 </script>
 </body>
