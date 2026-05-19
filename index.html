@@ -240,7 +240,7 @@
                     </div>
                     <div class="countdown-timer">
                         <div class="timer-digits" id="timer-${ev.id}">${live.text}</div>
-                        <div style="font-size:0.7rem; margin-top:6px;">${live.isPast ? 'event completed' : 'until event'}</div>
+                        <div style="font-size:0.7rem; margin-top:6px;">${live.isPast ? `${escapeHtml(ev.name)} completed` : `until ${escapeHtml(ev.name)}`}</div>
                     </div>
                     <div class="event-date"><i class="far fa-calendar-alt"></i> ${new Date(ev.targetDate).toLocaleString()}</div>
                     ${ev.notes ? `<div class="event-notes"><i class="far fa-pen-to-square"></i> ${escapeHtml(ev.notes)}</div>` : ''}
@@ -385,7 +385,7 @@
     document.getElementById('saveEventBtn')?.addEventListener('click', saveEvent);
     
     document.querySelectorAll('.pill').forEach(p => p.addEventListener('click', function(){ document.querySelectorAll('.pill').forEach(pi=>pi.classList.remove('active')); this.classList.add('active'); currentFilter = this.dataset.cat; renderEvents(); }));
-    <!-- Created by Opatola James on Tue May 19 12:23:53 WAT 2026  -->
+    <!-- Created by Opatola James on Tue May 19 12:23:53 WAT 2026 -->
     if(token) { document.getElementById('authOverlay').style.display = 'none'; document.getElementById('mainApp').classList.remove('hidden'); loadEvents(); }
 </script>
 </body>
