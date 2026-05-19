@@ -229,6 +229,18 @@
         }); 
     }
 
+    // Fix: Map MongoDB _id to id for consistency
+    function normalizeEvents(rawEvents) {
+        return rawEvents.map(ev => ({
+            id: ev._id || ev.id,
+            _id: ev._id,
+            name: ev.name,
+            targetDate: ev.targetDate,
+            category: ev.category,
+            notes: ev.notes
+        }));
+    }
+
     async function deleteEvent(id) {
         if (!confirm('Are you sure you want to delete this event?')) return;
         try {
@@ -244,16 +256,23 @@
             }
         } catch(e) {
             showToast('Error deleting event');
+            console.error(e);
         }
     }
     
     function editEvent(id) {
         const event = events.find(e => e.id === id);
-        if (!event) return;
+        if (!event) {
+            showToast('Event not found');
+            return;
+        }
         editingId = id;
         document.getElementById('modalTitle').innerHTML = '✏️ Edit event';
         document.getElementById('eventName').value = event.name;
-        document.getElementById('eventDate').value = event.targetDate.slice(0, 16);
+        // Fix date format for datetime-local input
+        const date = new Date(event.targetDate);
+        const formattedDate = date.toISOString().slice(0, 16);
+        document.getElementById('eventDate').value = formattedDate;
         document.getElementById('eventCategory').value = event.category;
         document.getElementById('eventNotes').value = event.notes || '';
         document.getElementById('eventModal').style.display = 'flex';
@@ -291,27 +310,12 @@
                     <div class="event-date"><i class="far fa-calendar-alt"></i> ${new Date(ev.targetDate).toLocaleString()}</div>
                     ${ev.notes ? `<div class="event-notes"><i class="far fa-pen-to-square"></i> ${escapeHtml(ev.notes)}</div>` : ''}
                     <div class="card-actions">
-                        <button class="card-action-btn edit-btn" data-id="${ev.id}"><i class="fas fa-edit"></i> Edit</button>
-                        <button class="card-action-btn delete-btn" data-id="${ev.id}"><i class="fas fa-trash-alt"></i> Delete</button>
+                        <button class="card-action-btn" onclick="editEvent('${ev.id}')"><i class="fas fa-edit"></i> Edit</button>
+                        <button class="card-action-btn" onclick="deleteEvent('${ev.id}')"><i class="fas fa-trash-alt"></i> Delete</button>
                     </div>
                 </div>
             `;
         }).join('');
-        
-        // Attach event listeners to dynamically created buttons
-        document.querySelectorAll('.edit-btn').forEach(btn => {
-            btn.addEventListener('click', (e) => {
-                e.stopPropagation();
-                editEvent(btn.getAttribute('data-id'));
-            });
-        });
-        
-        document.querySelectorAll('.delete-btn').forEach(btn => {
-            btn.addEventListener('click', (e) => {
-                e.stopPropagation();
-                deleteEvent(btn.getAttribute('data-id'));
-            });
-        });
         
         if(refreshInterval) clearInterval(refreshInterval);
         refreshInterval = setInterval(() => {
@@ -328,14 +332,21 @@
     async function loadEvents() {
         if(!token) return;
         try {
-            const res = await fetch(`${API_URL}/api/events`, { headers: { 'Authorization': `Bearer ${token}` } });
+            const res = await fetch(`${API_URL}/api/events`, { 
+                headers: { 'Authorization': `Bearer ${token}` } 
+            });
             if(res.ok) { 
-                events = await res.json(); 
+                const rawEvents = await res.json(); 
+                events = normalizeEvents(rawEvents);
                 renderEvents(); 
+            } else if(res.status === 401) {
+                logout();
+            } else {
+                showToast('Failed to load events');
             }
-            else if(res.status === 401) logout();
         } catch(e) { 
-            showToast('Server error. Make sure backend is running.'); 
+            showToast('Server error. Make sure backend is running.');
+            console.error(e);
         }
     }
     
@@ -344,32 +355,50 @@
         const targetDate = document.getElementById('eventDate').value;
         const category = document.getElementById('eventCategory').value;
         const notes = document.getElementById('eventNotes').value;
+        
         if(!name || !targetDate) { 
             alert('Please fill all fields'); 
             return; 
         }
+        
         const body = { name, targetDate, category, notes };
         
         try {
+            let response;
             if(editingId) {
-                await fetch(`${API_URL}/api/events/${editingId}`, { 
+                response = await fetch(`${API_URL}/api/events/${editingId}`, { 
                     method: 'PUT', 
                     headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, 
                     body: JSON.stringify(body) 
                 });
-                editingId = null;
+                if(response.ok) {
+                    editingId = null;
+                    showToast('Event updated successfully!');
+                }
             } else {
-                await fetch(`${API_URL}/api/events`, { 
+                response = await fetch(`${API_URL}/api/events`, { 
                     method: 'POST', 
                     headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, 
                     body: JSON.stringify(body) 
                 });
+                if(response.ok) {
+                    showToast('Event created successfully!');
+                }
             }
-            document.getElementById('eventModal').style.display = 'none';
-            await loadEvents();
-            showToast('Countdown saved!');
+            
+            if(response && response.ok) {
+                document.getElementById('eventModal').style.display = 'none';
+                document.getElementById('eventName').value = '';
+                document.getElementById('eventDate').value = '';
+                document.getElementById('eventNotes').value = '';
+                await loadEvents();
+            } else {
+                const error = await response.json();
+                showToast(error.error || 'Error saving event');
+            }
         } catch(e) {
             showToast('Error saving event');
+            console.error(e);
         }
     }
     
@@ -411,6 +440,7 @@
             }
         } catch(e) { 
             document.getElementById('authError').innerText = 'Cannot connect to server.'; 
+            console.error(e);
         }
     }
     
@@ -438,6 +468,7 @@
             }
         } catch(e) { 
             document.getElementById('authError').innerText = 'Cannot connect to server.'; 
+            console.error(e);
         }
     }
     
@@ -458,6 +489,7 @@
             }
         } catch(e) {
             alert('Error sending reset email');
+            console.error(e);
         }
     }
     
@@ -469,6 +501,10 @@
         document.getElementById('authOverlay').style.display = 'flex'; 
         if(refreshInterval) clearInterval(refreshInterval); 
     }
+    
+    // Make functions global for onclick handlers
+    window.deleteEvent = deleteEvent;
+    window.editEvent = editEvent;
     
     // Event Listeners
     document.getElementById('showLoginBtn')?.addEventListener('click', () => { 
