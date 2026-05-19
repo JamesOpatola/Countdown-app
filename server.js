@@ -299,6 +299,18 @@ app.delete('/api/events/:id', authMiddleware, async (req, res) => {
   await Event.findOneAndDelete({ _id: req.params.id, userId: req.userId });
   res.json({ success: true });
 });
-
+// ========== TEST EMAIL ENDPOINT (Remove after testing) ==========
+app.get('/api/test-email', async (req, res) => {
+    try {
+        const testEmail = req.query.email;
+        if (!testEmail) {
+            return res.json({ message: 'Use /api/test-email?email=your@email.com' });
+        }
+        await sendWelcomeEmail(testEmail, 'Test User');
+        res.json({ message: `✅ Test email sent to ${testEmail}. Check your inbox (and spam folder).` });
+    } catch(error) {
+        res.status(500).json({ error: error.message });
+    }
+});
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
